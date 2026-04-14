@@ -30,7 +30,7 @@ _...output omitted..._
 Include the `--skip-tags push` option to build the container image without pushing the image to https://quay.io.
 ====
 
-. Copy the provided `vale` script to your `~/bin` or `~/local/bin` directory:
+. Copy the provided `vale` script to your `~/bin` or `~/.local/bin` directory:
 +
 [subs="+quotes"]
 ----
