@@ -1,0 +1,71 @@
+---
+- name: Prep spellr files
+  hosts: workstation
+  become: true
+  become_user: student
+  gather_facts: false
+  vars_files:
+    - vars.yml
+  vars:
+    custom_files_dir: >-
+      {{ ansible_config_file |
+      regex_replace('ansible.cfg', 'files') }}
+    container_data_dir: /data
+  tasks:
+    - name: Create a temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: "{{ container_name }}-"
+      register: temp_dir
+
+    - name: Set temp_dir_path
+      ansible.builtin.set_fact:
+        temp_dir_path: "{{ temp_dir['path'] }}"
+
+    - name: >-
+        Clone GitHub repository: {{ source_repository }}
+      ansible.builtin.git:
+        repo: "{{ source_repository }}"
+        dest: "{{ temp_dir_path }}"
+
+    - name: Copy spellr files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ custom_files_dir }}"
+        remote_src: true
+      loop:
+        - "{{ temp_dir_path }}/aspell.conf"
+        - "{{ temp_dir_path }}/en.dat"
+        - "{{ temp_dir_path }}/rh_aspell_dicts"
+
+    - name: Customize {{ custom_files_dir }}/aspell.conf
+      ansible.builtin.lineinfile:
+        path: "{{ custom_files_dir }}/aspell.conf"
+        regexp: "^dict-dir"
+        line: dict-dir {{ container_data_dir }}/rh_aspell_dicts
+
+    - name: Identify commit hash
+      ansible.builtin.command:
+        cmd: git log -n1 --pretty=format:%H
+        chdir: "{{ temp_dir_path }}"
+      register: commit_hash
+
+    - name: Customize Containerfile with Git commit hash
+      ansible.builtin.lineinfile:
+        path: Containerfile
+        regexp: '^LABEL "{{ container_name }}.commit.hash"'
+        line: >-
+          LABEL "{{ container_name }}.commit.hash"="{{ commit_hash['stdout'] }}"
+
+    - name: Identify commit date
+      ansible.builtin.command:
+        cmd: git log -n1 --pretty=format:%cd
+        chdir: "{{ temp_dir_path }}"
+      register: commit_date
+
+    - name: Customize Containerfile with Git commit hash
+      ansible.builtin.lineinfile:
+        path: Containerfile
+        regexp: '^LABEL "{{ container_name }}.commit.date"'
+        line: >-
+          LABEL "{{ container_name }}.commit.date"="{{ commit_date['stdout'] }}"

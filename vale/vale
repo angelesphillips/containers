@@ -1,0 +1,24 @@
+#!/bin/bash
+
+FILE="${1}"
+CONTANIER_IMAGE="quay.io/redhattraining/vale"
+if [[ -n "${FILE}" ]]
+then
+  if [[ -f "${FILE}" && -r "${FILE}" ]]
+  then
+    podman images -n ${CONTANIER_IMAGE} | grep -q ${CONTANIER_IMAGE}
+    if [[ $? -eq 0 ]]
+    then
+      podman run --rm -v $(pwd)/${FILE}:$(pwd)/${FILE}:Z ${CONTANIER_IMAGE} $(pwd)/${FILE}
+    else
+      echo "Run: podman pull ${CONTANIER_IMAGE}" 1>&2
+      return 3
+    fi
+  else
+    echo "'${FILE}' must be a readable file." 1>&2
+    return 2
+  fi
+else
+  echo "Syntax: vale <PATH-TO-FILE>" 1>&2
+  return 1
+fi

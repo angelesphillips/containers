@@ -1,0 +1,11 @@
+---
+- name: Check system requirements
+  hosts: workstation
+  become: true
+  become_user: student
+  gather_facts: true
+  tasks:
+    - name: Fail if build system is not RHEL
+      when: ansible_facts['distribution'] != 'RedHat'
+      ansible.builtin.fail:
+        msg: You must build this container on a RHEL machine.

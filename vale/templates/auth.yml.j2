@@ -1,0 +1,6 @@
+auths:
+{% for REGISTRY in registries %}
+{% set u_p = REGISTRY['username'] ~ ":" ~ REGISTRY['password'] %}
+  {{ REGISTRY['name'] }}:
+    auth: "{{ u_p | b64encode }}"
+{% endfor %}

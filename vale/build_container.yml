@@ -1,0 +1,81 @@
+---
+- name: Build and push the container
+  hosts: workstation
+  become: true
+  become_user: student
+  gather_facts: false
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Identify commit hash (long)
+      ansible.builtin.command:
+        cmd: git log -n1 --pretty=format:%H
+        chdir: "{{ temp_dir_path }}"
+      register: commit_hash
+
+    - name: Identify commit hash (short)
+      ansible.builtin.command:
+        cmd: git log -n1 --pretty=format:%h
+        chdir: "{{ temp_dir_path }}"
+      register: commit_hash_short
+
+    - name: Identify commit date
+      ansible.builtin.command:
+        cmd: git log -n1 --pretty=format:%cd
+        chdir: "{{ temp_dir_path }}"
+      register: commit_date
+
+    - name: >-
+        Build container: {{ container_name }}
+      containers.podman.podman_image:
+        name: "{{ container_name }}"
+        path: "{{ build_dir }}"
+        build:
+          cache: false
+          force_rm: true
+          rm: true
+          format: oci
+          annotation:
+            vale.commit.hash: "{{ commit_hash['stdout'] }}"
+            vale.commit.date: "{{ commit_date['stdout'] }}"
+        tag: "{{ commit_hash_short['stdout'] }}"
+
+    - name: Identify vale version for tag
+      ansible.builtin.command:
+        cmd: >-
+          podman run --rm
+          localhost/{{ container_name }}:{{ commit_hash_short['stdout'] }}
+          vale -v
+      changed_when: false
+      register: query_version
+
+    - name: Set container_version
+      vars:
+        delimiter: ' '
+      ansible.builtin.set_fact:
+        container_version: >-
+          {{ query_version['stdout'] | split(delimiter) | last }}
+
+    - name: Set version_and_hash
+      ansible.builtin.set_fact:
+        version_and_hash: >-
+          {{ container_version }}-{{ commit_hash_short['stdout'] }}
+
+    - name: >-
+        Add tags to image: {{ container_name }}
+      containers.podman.podman_tag:
+        image: >-
+          localhost/{{ container_name }}:{{ commit_hash_short['stdout'] }}
+        target_names:
+          - "{{ quay_name }}:{{ version_and_hash }}"
+          - "{{ quay_name }}:latest"
+
+    - name: >-
+        Push container image to quay.io: {{ quay_name }}
+      tags: push
+      containers.podman.podman_image:
+        name: "{{ item }}"
+        push: true
+      loop:
+        - "{{ quay_name }}:{{ version_and_hash }}"
+        - "{{ quay_name }}:latest"

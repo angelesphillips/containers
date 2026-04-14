@@ -1,0 +1,20 @@
+FROM registry.redhat.io/ubi8/ubi:latest
+COPY files/aspell-asciidoc-0.2-1.el8.x86_64.rpm /tmp
+RUN yum -y install aspell aspell-en && \
+    yum -y install /tmp/aspell-asciidoc-0.2-1.el8.x86_64.rpm && \
+    yum clean all && \
+    rm -rf /tmp/*.rpm && \
+    useradd --shell /bin/bash client && \
+    mkdir -p /data/rh_aspell_dicts
+
+COPY files/aspell.conf /etc/aspell.conf
+COPY files/rh_aspell_dicts/* /data/rh_aspell_dicts/
+COPY files/en.dat /usr/lib64/aspell-0.60
+LABEL "spellr.commit.hash"="3a4afdaf3da3116c78b6e671457ebe3925313c67"
+LABEL "spellr.commit.date"="Tue Mar 3 21:16:34 2026 +1000"
+
+RUN chown -R client: /data && \
+    chmod -R a+rX /data
+USER client
+
+CMD echo "${FILE_TO_CHECK}" | aspell --mode=asciidoc list | sort | uniq -c | sort -rn

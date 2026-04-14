@@ -1,0 +1,75 @@
+= Creating a Containter to Run spellr
+
+RHEL{nbsp}9 and RHEL{nbsp}10 do not contain the packages needed to run spellr from a ROL `workstation` machine.
+One solution to this problem is to create a container and then use that container to run spelling checks.
+
+Use the files in this directory to create a `spellr` container that you can push to https://quay.io.
+
+== Procedure
+
+. Install the required Ansible Content Collections:
++
+[subs="+quotes"]
+----
+[student@workstation spellr]$ *ansible-galaxy collection install -r collections/requirements.yml*
+_...output omitted..._
+----
+
+. Customize the `vault-example.yml` file with the necessary credentials to register the build system and to authenticate to the https://registry.redhat.io and https://quay.io container registries.
+
+. Run the `site.yml` playbook.
+Use the `-e @_FILE_` option to pass the file which contains your credentials (for a file named `vault.yml`, use the `-e @vault.yml` option).
+If you used Ansible vault to encrypt that file, then include the `--ask-vault-pass` option:
++
+[subs="+quotes"]
+----
+[student@workstation spellr]$ *ansible-playbook site.yml -e @_FILE_ --ask-vault-pass*
+Vault password: _YOUR_VAULT_PASSWORD_
+_...output omitted..._
+----
++
+[NOTE]
+====
+Include the `--skip-tags push` option to build the container image without pushing the image to https://quay.io.
+====
+
+. Copy the provided `spellr` script to your `~/bin` or `~/local/bin` directory:
++
+[subs="+quotes"]
+----
+[student@workstation spellr]$ *cp spellr ~/bin/*
+----
+
+== Examples
+
+Currently this container image expects that you run the `spellr` command to pass a file to the container image.
+This container image does not run interactively, but rather produces a sorted list of the identified spelling mistakes found in the file.
+
+The following command indicates that there are spelling errors, which the developer should fix:
+
+[subs="+quotes"]
+----
+[student@workstation AU467]$ *spellr content/mesh/manage/lecture.adoc*
+      5 priveleges
+      1 asociate
+      1 Manging
+----
+
+After viewing the output, the developer might manually fix the file, or use something like the `sed` command to perform a search and replace:
+
+[subs="+quotes"]
+----
+[student@workstation AU467]$ *sed -i 's/priveleges/privileges/g' content/mesh/manage/lecture.adoc*
+
+[student@workstation AU467]$ *spellr content/mesh/manage/lecture.adoc*
+      1 asociate
+      1 Manging
+----
+
+
+The following command does not produce output because the file does not contain spelling errors:
+
+[subs="+quotes"]
+----
+[student@workstation AU467]$ *spellr content/workflow/approval/lecture.adoc*
+----

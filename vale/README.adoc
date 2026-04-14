@@ -1,0 +1,69 @@
+= Creating a Container Image to run Vale
+
+Use the files in this directory to create a `vale` container that you can push to https://quay.io.
+
+== Procedure
+
+. Install the required Ansible Content Collections:
++
+[subs="+quotes"]
+----
+[student@workstation vale]$ *ansible-galaxy collection install -r collections/requirements.yml*
+_...output omitted..._
+----
+
+. Customize the `vault-example.yml` file with the necessary credentials to register the build system and to authenticate to the https://registry.redhat.io and https://quay.io container registries.
+
+. Run the `site.yml` playbook.
+Use the `-e @_FILE_` option to pass the file which contains your credentials (for a file named `vault.yml`, use the `-e @vault.yml` option).
+If you used Ansible vault to encrypt that file, then include the `--ask-vault-pass` option:
++
+[subs="+quotes"]
+----
+[student@workstation vale]$ *ansible-playbook site.yml -e @_FILE_ --ask-vault-pass*
+Vault password: _YOUR_VAULT_PASSWORD_
+_...output omitted..._
+----
++
+[NOTE]
+====
+Include the `--skip-tags push` option to build the container image without pushing the image to https://quay.io.
+====
+
+. Copy the provided `vale` script to your `~/bin` or `~/local/bin` directory:
++
+[subs="+quotes"]
+----
+[student@workstation vale]$ *cp vale ~/bin/*
+----
+
+== Examples
+
+Currently this container image expects that you run the `vale` command to pass a file to the container image.
+This container image does not run continuously or interact with VS code.
+
+The following file has two similar warnings, which the developer might address:
+
+[subs="+quotes"]
+----
+[student@workstation AU467]$ *vale content/mesh/manage/lecture.adoc*
+
+ /home/student/Curriculum/AU467/content/mesh/manage/lecture.adoc
+ 9:34    warning  Use '`execution_nodes`          rht.machine
+                  machine' rather than
+                  '`execution_nodes` host'.
+ 277:87  warning  Use '`exec2.lab.example.com`    rht.machine
+                  machines' rather than
+                  '`exec2.lab.example.com`
+                  hosts'.
+
+✖ 0 errors, 2 warnings and 0 suggestions in 1 file.
+----
+
+The following file does not have any errors, warnings, or suggestions:
+
+[subs="+quotes"]
+----
+[student@workstation AU467]$ *vale content/rbac/user/ge.adoc*
+✔ 0 errors, 0 warnings and 0 suggestions in 1 file.
+----

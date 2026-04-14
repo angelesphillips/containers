@@ -1,0 +1,18 @@
+FROM registry.redhat.io/ubi9/ubi:latest
+RUN dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm --nogpgcheck && \
+    dnf -y copr enable mczernek/vale && \
+    dnf -y install vale rubygem-asciidoctor && \
+    dnf -y copr disable mczernek/vale && \
+    dnf -y update && \
+    dnf -y clean all && \
+    rm -rf /tmp/*.rpm && \
+    useradd --shell /bin/bash client
+COPY files/vale-styles /home/client/.vale-styles
+COPY files/vale-styles/vale.ini.template /home/client/.vale.ini
+
+LABEL "vale.commit.hash"="d33f6f1201c7bd0faaa96dd17278f624557d1879"
+LABEL "vale.commit.date"="Tue Mar 31 19:28:40 2026 +1100"
+
+USER client
+
+ENTRYPOINT ["/bin/vale"]

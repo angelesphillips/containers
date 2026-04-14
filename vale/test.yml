@@ -1,0 +1,10 @@
+---
+- name: Test for become user name
+  hosts: workstation
+  become: true
+  become_user: student
+  gather_facts: true
+  tasks:
+    - name: Show ansible_facts
+      ansible.builtin.debug:
+        var: ansible_facts

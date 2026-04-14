@@ -1,0 +1,17 @@
+---
+# Enter the credentials that you use to log in to https://access.redhat.com.
+redhat_access:
+  username: <YOUR-RED-HAT-USERNAME>
+  password: "<YOUR-RED-HAT-PASSWORD>"
+
+# Enter the credentials that you use to log in to https://registry.redhat.io
+# and https://quay.io. You might have the same username and password for both
+# https://access.redhat.com and https://registry.redhat.io.
+registries:
+  - name: registry.redhat.io
+    username: "{{ redhat_access['username'] }}"
+    password: "{{ redhat_access['password'] }}"
+
+  - name: quay.io
+    username: <YOUR-QUAY-USERNAME>
+    password: "<YOUR-QUAY-PASSWORD">

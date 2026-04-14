@@ -1,0 +1,4 @@
+collections/ansible_collections
+files/aspell.conf
+files/en.dat
+files/rh_aspell_dicts
