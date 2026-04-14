@@ -2,6 +2,7 @@
 
 FILE="${1}"
 CONTANIER_IMAGE="quay.io/redhattraining/spellr"
+#CONTANIER_IMAGE="quay.io/angelesphillips/spellr" # Existing private image
 if [[ -n "${FILE}" ]]
 then
   if [[ -f "${FILE}" && -r "${FILE}" ]]
