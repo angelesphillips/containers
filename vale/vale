@@ -12,7 +12,9 @@ then
     then
       podman run --rm -v $(pwd)/${FILE}:$(pwd)/${FILE}:Z ${CONTANIER_IMAGE} $(pwd)/${FILE}
     else
-      echo "Run: podman pull ${CONTANIER_IMAGE}" 1>&2
+      echo "Missing container image: ${CONTANIER_IMAGE}" 1>&2
+      echo "Log in to quay.io and then run the following command:" 1>&2
+      echo "podman pull ${CONTANIER_IMAGE}" 1>&2
       exit 3
     fi
   else
