@@ -15,7 +15,9 @@ then
     -v "$HOME/.ansible:/tmp/ansible:Z" \
     -v "$SSH_AUTH_SOCK:$SSH_AUTH_SOCK" \
     -e SSH_AUTH_SOCK="$SSH_AUTH_SOCK" \
-    -v "$HOME/.cache/pre-commit:/tmp/pre-commit-cache:Z" \
+    -v "$HOME/.cache/pre-commit-container:/tmp/pre-commit-cache:Z" \
+    -e HOME=/tmp \
+    -e PRE_COMMIT_HOME=/tmp/pre-commit-cache \
     -e ANSIBLE_HOME=/tmp/ansible \
     -e PRE_COMMIT_HOME=/tmp/pre-commit-cache \
     -e XDG_CACHE_HOME=/tmp/cache \

@@ -12,8 +12,8 @@
         group: student
         mode: "0755"
       loop:
-        - "/home/student/.cache/pre-commit"
-        - "/home/student/.ansible"
+        - "/home/student/.cache/pcommit/ansible"
+        - "/home/student/.cache/pcommit/pre-commit"
 
     - name: >-
         Copy file: pre-commit
