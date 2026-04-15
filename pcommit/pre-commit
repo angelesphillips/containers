@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#CONTANIER_IMAGE="quay.io/redhattraining/pcommit" # Future image
+#CONTANIER_IMAGE="quay.io/angelesphillips/pcommit" # Existing private image
+CONTANIER_IMAGE="localhost/pcommit" # Local image
+
+podman images -n ${CONTANIER_IMAGE} | grep -q ${CONTANIER_IMAGE}
+if [[ $? -eq 0 ]]
+then
+  podman run --rm \
+    --userns=keep-id \
+    -v "$(pwd):/src:Z" \
+    -w /src \
+    --user "$(id -u):$(id -g)" \
+    -v "$HOME/.ansible:/tmp/ansible:Z" \
+    -v "$SSH_AUTH_SOCK:$SSH_AUTH_SOCK" \
+    -e SSH_AUTH_SOCK="$SSH_AUTH_SOCK" \
+    -v "$HOME/.cache/pre-commit:/tmp/pre-commit-cache:Z" \
+    -e ANSIBLE_HOME=/tmp/ansible \
+    -e PRE_COMMIT_HOME=/tmp/pre-commit-cache \
+    -e XDG_CACHE_HOME=/tmp/cache \
+    -e GIT_CONFIG_COUNT=1 \
+    -e GIT_CONFIG_KEY_0=safe.directory \
+    -e GIT_CONFIG_VALUE_0=/src \
+    -e GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" \
+    -e GIT_SSL_NO_VERIFY=true \
+    ${CONTANIER_IMAGE} /usr/bin/env -u VIRTUAL_ENV pre-commit "$@"
+else
+  echo "Missing container image: ${CONTANIER_IMAGE}" 1>&2
+  echo "Log in to quay.io and then run the following command:" 1>&2
+  echo "podman pull ${CONTANIER_IMAGE}" 1>&2
+  exit 1
+fi

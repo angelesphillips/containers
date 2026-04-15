@@ -1,0 +1,4 @@
+collections/ansible_collections
+*-artifact-*
+ansible-navigator.log
+files/classroom-ca.pem

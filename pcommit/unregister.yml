@@ -1,0 +1,8 @@
+---
+- name: Unregister system
+  hosts: workstation
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Unregister machine
+      ansible.builtin.command: subscription-manager unregister

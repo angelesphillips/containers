@@ -1,0 +1,34 @@
+---
+- name: Tweaks for running pre-commit container
+  hosts: workstation
+  become: true
+  tasks:
+    - name: Creat cache directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+        owner: student
+        group: student
+        mode: "0755"
+      loop:
+        - "/home/student/.cache/pre-commit"
+        - "/home/student/.ansible"
+
+    - name: >-
+        Copy file: pre-commit
+      ansible.builtin.copy:
+        src: pre-commit
+        dest: /home/student/.local/bin/pre-commit
+        owner: student
+        group: student
+        mode: "0755"
+
+    - name: Enable SELinux boolean
+      vars:
+        selinux_boolean:
+          - name: container_use_devices
+            state: true
+            persistent: true
+      ansible.builtin.include_role:
+        name: redhat.rhel_system_roles.selinux

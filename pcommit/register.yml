@@ -1,0 +1,33 @@
+---
+- name: Register system for access to RPM repositories
+  hosts: workstation
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Fail if redhat_access is not defined
+      when: redhat_access is not defined
+      ansible.builtin.fail:
+        msg: >-
+          You must define the 'redhat_access' variable.
+          Check the 'vault-example.yml' file for an example.
+          You can pass your file with the '-e @YOUR-FILE' option.
+          Include the '--ask-vault-pass' option if you encrypt the
+          file with Ansible vault.
+
+    - name: Subscription block
+      block:
+        # This command has a return code of 1 (which causes an error)
+        # if the system is not registered.
+        - name: Check subscription status
+          ansible.builtin.command: subscription-manager status
+          changed_when: false
+
+      rescue:
+        # By registering the system, the ubi9/python-311 container image will
+        # have access to the normal RHEL 9 RPM repositories.
+        - name: Register the system
+          ansible.builtin.command:
+            cmd: >
+              subscription-manager register
+              --username={{ redhat_access['username'] }}
+              --password={{ redhat_access['password'] }}

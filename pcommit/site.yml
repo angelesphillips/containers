@@ -1,0 +1,20 @@
+---
+# Run this playbook on a RHEL system in a classroom environment,
+# such as on the `workstation` machine.
+#
+# ansible-playbook site.yml -e @phillips.yml --ask-vault-pass
+
+- name: Verify system requirements
+  ansible.builtin.import_playbook: build_on_rhel.yml
+
+- name: Register system for access to RPM repositories
+  ansible.builtin.import_playbook: register.yml
+
+- name: Authenticate to container registries
+  ansible.builtin.import_playbook: container_auth.yml
+
+- name: Build the container
+  ansible.builtin.import_playbook: build_container.yml
+
+- name: Unregister system
+  ansible.builtin.import_playbook: unregister.yml

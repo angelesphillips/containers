@@ -1,0 +1,50 @@
+---
+- name: Authenticate to container registries
+  hosts: workstation
+  become: true
+  become_user: student
+  gather_facts: true
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Fail if registries is not defined
+      when: registries is not defined
+      ansible.builtin.fail:
+        msg: >-
+          You must define the 'registries' variable.
+          Check the 'vault-example.yml' file for an example.
+          You can pass your file with the '-e @YOUR-FILE' option.
+          Include the '--ask-vault-pass' option if you encrypt the
+          file with Ansible vault.
+
+    - name: Set the_user_uid
+      ansible.builtin.set_fact:
+        the_user_uid: "{{ ansible_facts['user_uid'] }}"
+
+    - name: Container authentication block
+      vars:
+        user_container_dir: /run/user/{{ the_user_uid }}/containers
+        user_container_auth: "{{ user_container_dir }}/auth.json"
+      block:
+        - name: >-
+            Create directory: {{ user_container_dir }}
+          ansible.builtin.file:
+            path: "{{ user_container_dir }}"
+            state: directory
+            owner: "{{ ansible_facts['user_id'] }}"
+            group: "{{ ansible_facts['user_id'] }}"
+            mode: "0700"
+            setype: user_tmp_t
+
+        - name: >-
+            Create file: {{ user_container_auth }}
+          ansible.builtin.copy:
+            content: >-
+              {{ lookup('template', 'templates/auth.yml.j2') |
+              from_yaml |
+              to_nice_json }}
+            dest: "{{ user_container_auth }}"
+            owner: "{{ ansible_facts['user_id'] }}"
+            group: "{{ ansible_facts['user_id'] }}"
+            mode: "0600"
+            setype: user_tmp_t
