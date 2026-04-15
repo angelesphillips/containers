@@ -13,7 +13,7 @@
         mode: "0755"
       loop:
         - "/home/student/.cache/pcommit/ansible"
-        - "/home/student/.cache/pcommit/pre-commit"
+        - "/home/student/.cache/pre-commit-container"
 
     - name: >-
         Copy file: pre-commit
