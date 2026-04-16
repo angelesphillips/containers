@@ -1,0 +1,32 @@
+# Use ubi-minimal as the base image
+FROM registry.redhat.io/ubi9/ubi-minimal
+
+# Switch to root to install system dependencies
+USER 0
+
+RUN mkdir -p /tmp/ansible /tmp/pre-commit-cache /tmp/cache && \
+    chmod -R 777 /tmp/ansible /tmp/pre-commit-cache /tmp/cache
+
+RUN microdnf -y install python3.11 python3.11-pip git && microdnf clean all
+
+RUN useradd -u 1001 -g 0 -s /sbin/nologin -c 'Default User' default
+
+# Switch back to the default non-root user
+USER 1001
+
+# Install pre-commit, ansible-lint, and yamllint via pip
+# We use --no-cache-dir to keep the image size small
+RUN python3.11 -m pip install --no-cache-dir --upgrade pip && \
+    python3.11 -m pip install --no-cache-dir \
+    pre-commit \
+    ansible-lint \
+    yamllint
+
+# Set environment variables for Python and Pre-commit
+ENV PRE_COMMIT_HOME=/tmp/pre-commit-cache
+
+# Set the working directory
+WORKDIR /src
+
+# Set the default command to show versions (verifies installation)
+CMD ["pre-commit", "--version"]
