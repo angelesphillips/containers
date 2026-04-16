@@ -15,3 +15,7 @@ registries:
   - name: quay.io
     username: <YOUR-QUAY-USERNAME>
     password: "<YOUR-QUAY-PASSWORD">
+
+  - name: aap.lab.example.com
+    username: admin
+    password: redhat

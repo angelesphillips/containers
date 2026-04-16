@@ -1,8 +1,9 @@
 ---
 #container_namespace: redhattraining
-container_namespace: angelesphillips # For use with existing private image
-container_name: pcommit
-quay_name: quay.io/{{ container_namespace }}/{{ container_name }}
+#container_namespace: angelesphillips # For use with existing private image
+#container_name: pcommit
+#quay_name: quay.io/{{ container_namespace }}/{{ container_name }}
+aap_name: aap.lab.example.com/{{ container_name }}
 build_dir: >-
   {{ ansible_config_file |
   regex_replace('/ansible.cfg') }}

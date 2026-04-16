@@ -40,15 +40,15 @@
         image: >-
           localhost/{{ container_name }}
         target_names:
-          - "{{ quay_name }}:{{ container_version }}"
-          - "{{ quay_name }}:latest"
+          - "{{ aap_name }}:{{ container_version }}"
+          - "{{ aap_name }}:latest"
 
-#    - name: >-
-#        Push container image to quay.io: {{ quay_name }}
-#      tags: push
-#      containers.podman.podman_image:
-#        name: "{{ item }}"
-#        push: true
-#      loop:
-#        - "{{ quay_name }}:{{ container_version }}"
-#        - "{{ quay_name }}:latest"
+    - name: >-
+        Push container image to aap.lab.example.com: {{ aap_name }}
+      tags: push
+      containers.podman.podman_image:
+        name: "{{ item }}"
+        push: true
+      loop:
+        - "{{ aap_name }}:{{ container_version }}"
+        - "{{ aap_name }}:latest"
