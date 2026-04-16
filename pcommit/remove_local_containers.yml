@@ -1,0 +1,16 @@
+---
+- name: Remove local contains used during build process
+  hosts: workstation
+  become: true
+  become_user: student
+  vars:
+    build_containers:
+      - localhost/pcommit
+      - registry.redhat.io/ubi9/ubi-minimal
+  tasks:
+    - name: Remove containers
+      containers.podman.podman_image:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ build_containers }}"
+
