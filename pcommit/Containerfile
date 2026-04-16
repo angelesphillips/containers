@@ -1,36 +1,26 @@
-# Use UBI 9 Minimal as the base image
-FROM registry.access.redhat.com/ubi9/ubi-minimal
+# Use ubi-minimal as the base image
+FROM registry.redhat.io/ubi9/ubi-minimal
 
 # Switch to root to install system dependencies
 USER 0
 
-# Create necessary directories with open permissions
 RUN mkdir -p /tmp/ansible /tmp/pre-commit-cache /tmp/cache && \
     chmod -R 777 /tmp/ansible /tmp/pre-commit-cache /tmp/cache
 
-# Install EPEL, Python 3.11, Git, and Asciidoctor
-# microdnf is the package manager for ubi-minimal
-RUN microdnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && \
-    microdnf install -y \
-    python3.11 \
-    python3.11-pip \
-    git \
-    rubygem-asciidoctor && \
-    microdnf clean all
-
-# Create a non-root user (1001) since ubi-minimal doesn't include it by default
-RUN echo "default:x:1001:0:Default User:/tmp:/sbin/nologin" >> /etc/passwd
-
-# Switch to the non-root user
-USER 1001
+RUN microdnf -y install python3.11 python3.11-pip git && microdnf clean all
 
 # Install pre-commit, ansible-lint, and yamllint via pip
-# We use python3.11 -m pip to ensure we are using the correct version
+# Use --no-cache-dir to keep the image size small
 RUN python3.11 -m pip install --no-cache-dir --upgrade pip && \
     python3.11 -m pip install --no-cache-dir \
     pre-commit \
     ansible-lint \
     yamllint
+
+RUN useradd -u 1001 -g 1001 -s /sbin/nologin -c 'Default User' default
+
+# Switch back to the default non-root user
+USER 1001
 
 # Set environment variables for Python and Pre-commit
 ENV PRE_COMMIT_HOME=/tmp/pre-commit-cache
@@ -38,5 +28,5 @@ ENV PRE_COMMIT_HOME=/tmp/pre-commit-cache
 # Set the working directory
 WORKDIR /src
 
-# Set the default command to show versions
+# Set the default command to show versions (verifies installation)
 CMD ["pre-commit", "--version"]
