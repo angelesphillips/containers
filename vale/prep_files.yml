@@ -27,6 +27,15 @@
         repo: "{{ source_repository }}"
         dest: "{{ temp_dir_path }}"
 
+    - name: >-
+        Create directory: {{ custom_files_dir }}/vale-styles
+      ansible.builtin.file:
+        path: "{{ custom_files_dir }}/vale-styles"
+        state: directory
+        owner: student
+        group: student
+        mode: "0755"
+
     - name: Copy vale files
       ansible.builtin.copy:
         src: "{{ temp_dir_path }}/"
