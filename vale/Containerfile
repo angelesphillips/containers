@@ -10,8 +10,8 @@ RUN dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.n
 COPY files/vale-styles /home/client/.vale-styles
 COPY files/vale-styles/vale.ini.template /home/client/.vale.ini
 
-LABEL "vale.commit.hash"="d33f6f1201c7bd0faaa96dd17278f624557d1879"
-LABEL "vale.commit.date"="Tue Mar 31 19:28:40 2026 +1100"
+LABEL "vale.commit.hash"="9c5c2b651e41c83213a3d9e591145dd0c7f75829"
+LABEL "vale.commit.date"="Thu May 7 22:18:58 2026 +1000"
 
 USER client
 
